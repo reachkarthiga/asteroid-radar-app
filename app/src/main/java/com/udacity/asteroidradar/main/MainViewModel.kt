@@ -1,18 +1,16 @@
 package com.udacity.asteroidradar.main
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.udacity.asteroidradar.model.Asteroid
-import com.udacity.asteroidradar.model.PictureOfDay
+import androidx.lifecycle.*
+import com.udacity.asteroidradar.model.*
 import com.udacity.asteroidradar.network.AsteroidCall
 import com.udacity.asteroidradar.network.PictureOfTheDayCall
 import com.udacity.asteroidradar.network.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.repository.Repository
 import com.udacity.asteroidradar.roomDataBase.Dao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,10 +31,6 @@ class MainViewModel(val dao: Dao) : ViewModel() {
 
     val repository = Repository(dao)
 
-    val today:Calendar = Calendar.getInstance()
-    val sdf :SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
-    var endDate:String = ""
-
     fun onAsteroidItemClick(id: Asteroid) {
         _navigateToDetail.value = id
     }
@@ -48,22 +42,25 @@ class MainViewModel(val dao: Dao) : ViewModel() {
     init {
         getPictureOfTheDay()
         getAsteroidListFromDB()
-
     }
 
     fun getAsteroidListFromDB() {
-        _asteroidsList.value = repository.asteroids.value
+        viewModelScope.launch {
+            repository.getAsteroidDetails()
+        }
+
+       // _asteroidsList.value = repository.asteroids.value
     }
 
-    fun weekFilter() {
-        today.add(Calendar.DATE, 7)
-        endDate = sdf.format(today.time).toString()
-        //getAsteroidListFromDB(sdf.format(today.time).toString(), endDate)
-    }
-
-    fun todayFilter() {
-       // getAsteroidListFromDB(sdf.format(today.time).toString(), sdf.format(today.time).toString())
-    }
+//    fun weekFilter() {
+//        today.add(Calendar.DATE, 7)
+//        endDate = sdf.format(today.time).toString()
+//        getAsteroidListFromDB(sdf.format(today.time).toString(), endDate)
+//    }
+//
+//    fun todayFilter() {
+//        getAsteroidListFromDB(sdf.format(today.time).toString(), sdf.format(today.time).toString())
+//    }
 
     private fun getPictureOfTheDay() {
         viewModelScope.launch {

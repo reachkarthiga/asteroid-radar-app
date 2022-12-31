@@ -23,7 +23,7 @@ abstract class Database : RoomDatabase() {
                 if (instance == null) {
 
                     instance = Room.databaseBuilder(context.applicationContext,
-                        Database::class.java, "aster_database")
+                        Database::class.java, "asteroid_database")
                         .fallbackToDestructiveMigration().build()
 
                     INSTANCE = instance

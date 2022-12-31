@@ -7,29 +7,36 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.picasso.Picasso
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.R
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
+import com.udacity.asteroidradar.model.DatabaseAsteroid
 import com.udacity.asteroidradar.model.asDomainModel
 import com.udacity.asteroidradar.roomDataBase.Dao
 import com.udacity.asteroidradar.roomDataBase.Database
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainFragment : Fragment() {
 
+    lateinit var dao :Dao
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val binding = FragmentMainBinding.inflate(inflater)
         binding.lifecycleOwner = this
         val database  = Database.getInstance(requireContext())
-        val dao = database.dao
+        dao = database.dao
         val viewModelFactory: MainViewModelFactory = MainViewModelFactory(dao)
         val viewModel: MainViewModel by viewModels{
             viewModelFactory
         }
         binding.viewModel = viewModel
+
 
         val adapter = AsteroidsAdapter(ClickListener {
             viewModel.onAsteroidItemClick(it)
@@ -62,6 +69,7 @@ class MainFragment : Fragment() {
 
         return binding.root
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_overflow_menu, menu)
