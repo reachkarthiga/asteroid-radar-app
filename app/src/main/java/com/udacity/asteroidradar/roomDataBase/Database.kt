@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.udacity.asteroidradar.model.DatabaseAsteroid
+import com.udacity.asteroidradar.model.PictureOfDay
 
 
-@androidx.room.Database(entities = [DatabaseAsteroid::class] , version = 1)
+@androidx.room.Database(entities = [DatabaseAsteroid::class, PictureOfDay::class] , version = 1)
 abstract class Database : RoomDatabase() {
 
     abstract val dao:Dao
+    abstract val pictureDao:PictureDao
 
     companion object{
         @Volatile

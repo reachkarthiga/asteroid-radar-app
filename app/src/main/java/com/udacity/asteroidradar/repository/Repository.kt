@@ -7,26 +7,31 @@ import com.udacity.asteroidradar.model.Asteroid
 import com.udacity.asteroidradar.model.asDomainModel
 import com.udacity.asteroidradar.model.toDataBaseModel
 import com.udacity.asteroidradar.network.AsteroidCall
+import com.udacity.asteroidradar.network.PictureOfTheDayCall
 import com.udacity.asteroidradar.network.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.roomDataBase.Dao
+import com.udacity.asteroidradar.roomDataBase.PictureDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-class Repository( val database: Dao) {
+class Repository(val dao: Dao, val pictureDao: PictureDao) {
 
-//    val asteroids : LiveData<List<Asteroid>> = Transformations.map(database.getAllAsteroids()) {
-//        it.asDomainModel()
-//    }
+    val today: Calendar = Calendar.getInstance()
+    val sdf = SimpleDateFormat("yyyy-MM-dd")
+
+    val asteroids: LiveData<List<Asteroid>> = Transformations.map(dao.getAllAsteroids()) {
+        it.asDomainModel()
+    }
+
+    val pictureOfTheDay = pictureDao.getPicture()
 
     suspend fun getAsteroidDetails() {
 
-        val today: Calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("yyyy-MM-dd")
         val dateAfter1Week = Calendar.getInstance()
-        dateAfter1Week.add(Calendar.DATE, 1)
+        dateAfter1Week.add(Calendar.DATE, 7)
 
         withContext(Dispatchers.IO) {
             val networkData = AsteroidCall
@@ -37,11 +42,23 @@ class Repository( val database: Dao) {
                     "MmTVrTp2EogMQqPKK6ZVAUP5u3gcT6mICPQZmAyv"
                 )
 
-            val networkAsteroid  = (parseAsteroidsJsonResult(JSONObject(networkData))).toDataBaseModel()
-            database.insertAsteroid(*networkAsteroid.toTypedArray())
+            Log.i("Network Results" , networkData)
 
-            val test1 = database.getAllAsteroids()
-            Log.i("test", test1.toString())
+            val networkAsteroid =
+                (parseAsteroidsJsonResult(JSONObject(networkData))).toDataBaseModel()
+            dao.insertAsteroid(*networkAsteroid.toTypedArray())
+
+            dao.delete(sdf.format(today.time))
+
+            pictureDao.deletePicture(sdf.format(today.time))
+
+            val pictureOfTheDay = PictureOfTheDayCall
+                .retrofitService
+                .getPictureOfTheDay("MmTVrTp2EogMQqPKK6ZVAUP5u3gcT6mICPQZmAyv")
+
+            Log.i("Network Results" , pictureOfTheDay.toString())
+
+            pictureDao.insertPicture(pictureOfTheDay)
 
         }
     }

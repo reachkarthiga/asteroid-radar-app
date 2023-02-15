@@ -1,6 +1,7 @@
 package com.udacity.asteroidradar.workManager
 
 import android.app.Application
+import android.util.Log
 import androidx.work.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,27 +12,39 @@ class App :Application() {
 
     val scope = CoroutineScope(Dispatchers.Default)
 
+    companion object  {
+        const val WORK_NAME = "asteroid"
+        const val INSTALLATION_LOADING = "firstTimeLoadingData"
+    }
+
     override fun onCreate() {
         super.onCreate()
-        scope.launch {
-            callWorkManager()
-        }
+        callWorkManager()
     }
 
     private fun callWorkManager() {
-        val constraints = Constraints.Builder()
-            .setRequiresCharging(true)
-            .setRequiresDeviceIdle(true)
-            .setRequiresBatteryNotLow(true)
-            .setRequiredNetworkType(NetworkType.UNMETERED)
-            .build()
+        scope.launch {
 
-        val request = PeriodicWorkRequestBuilder<RefreshDataWorker>( 1, TimeUnit.DAYS)
-            .setConstraints(constraints)
-            .build()
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .build()
 
-        WorkManager.getInstance().enqueueUniquePeriodicWork(RefreshDataWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP, request)
+            val request = PeriodicWorkRequestBuilder<RefreshDataWorker>( 1, TimeUnit.DAYS)
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance().enqueueUniquePeriodicWork(
+                WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP, request)
+
+            val initialRequest = OneTimeWorkRequestBuilder<RefreshDataWorker>().build()
+
+            WorkManager.getInstance().enqueueUniqueWork(INSTALLATION_LOADING,
+                ExistingWorkPolicy.KEEP, initialRequest)
+
+        }
+
 
     }
 

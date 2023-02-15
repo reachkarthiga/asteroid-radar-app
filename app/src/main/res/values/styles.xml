@@ -13,18 +13,20 @@
     <style name="heading">
         <item name="android:textColor">@color/default_text_color</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textDirection">locale</item>
     </style>
 
     <style name="subtitle">
         <item name="android:textColor">@color/default_text_color</item>
         <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textDirection">locale</item>
     </style>
 
     <style name="normal">
         <item name="android:textDirection">locale</item>
+        <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/default_text_color</item>
     </style>
 
